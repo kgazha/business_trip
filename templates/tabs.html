@@ -1,0 +1,16 @@
+{% load staticfiles %}
+{% block tabs %}
+<div class="tabs">
+    <div class="col s12">
+    <ul class="tabs">
+        {% for tab, queue in tabs.items %}
+            {% if current_queue == queue %}
+            <li class="tab col s3"><a href="/business_trips/?queue={{ queue }}" class="active_tab">{{ tab }}</a></li>
+            {% else %}
+            <li class="tab col s3"><a href="/business_trips/?queue={{ queue }}">{{ tab }}</a></li>
+            {% endif %}
+        {% endfor %}
+    </ul>
+    </div>
+</div>
+{% endblock %}

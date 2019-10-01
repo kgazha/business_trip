@@ -1,0 +1,15 @@
+{% for field in form %}
+{% if field.name not in form.declared_fields %}
+<div class="input-field col s12 m4 l12">
+    {% if field.errors %}
+        {% for error in field.errors %}
+        <span class="helper-text" data-error="wrong" data-success="right">
+        {{ error  }}
+        </span>
+        {% endfor %}
+    {% endif %}
+    {{ field }}
+    {{ field.label_tag }}
+</div>
+{% endif %}
+{% endfor %}

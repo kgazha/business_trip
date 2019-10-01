@@ -1,0 +1,88 @@
+.error-message {
+    color: #F44336;
+    padding-bottom: 20px;
+}
+
+.login-form {
+    padding-top: 40px;
+}
+
+@media only screen
+and (min-width: 601px) {
+    .login-form {
+        width: 400px;
+    }
+}
+
+td {
+    cursor: pointer;
+}
+
+.table-of-contents a.active {
+    border-left: 2px solid #00bcd4;
+}
+
+.table-of-contents a.active:hover {
+    border-left: 2px solid #00bcd4;
+}
+
+.table-of-contents a:hover {
+    border-left: 1px solid #00bcd4;
+}
+
+.btn {
+    min-width: 220px;
+    margin-bottom: 10px;
+}
+
+body {
+    display: flex;
+    min-height: 100vh;
+    flex-direction: column;
+}
+
+main {
+    flex: 1 0 auto;
+}
+
+.page-footer {
+    padding: 0;
+}
+
+.business-trip-table th,
+.business-trip-table td {
+    min-width: 100px;
+    width: 150px;
+}
+
+.business-trip-table td {
+    word-break: break-word;
+}
+
+.info {
+    background-color: #ffca28;
+    text-align: center;
+    color: #424242;
+    border: 2px solid #ffab00;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    cursor: pointer;
+}
+
+div.tabs {
+    margin-top: 10px;
+}
+
+.tabs .tab a {
+    color: #004d40;
+}
+
+.tabs .tab a:hover {
+    color: #00897b;
+    background-color: #b2dfdb;
+}
+
+.tabs .tab .active_tab {
+    color: #00897b;
+    background-color: #e0f2f1;
+}

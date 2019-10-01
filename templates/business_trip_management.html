@@ -1,0 +1,30 @@
+{% extends "index.html" %}
+{% block business_trip_management %}
+<div class="container">
+    {% if tabs|length > 1 %}
+        {% include "tabs.html" %}
+    {% endif %}
+    {% if current_queue != 'all' %}
+    <div class="row">
+        <div class="col m9">
+    {% endif %}
+    {% include "business_trip_table.html" %}
+    {% if current_queue != 'all' %}
+        </div>
+        <div class="col m3 right">
+            <ul class="table-of-contents">
+                {% for status in statuses %}
+                    <li>
+                        {% if status.0.lower == active_status.lower %}
+                            <a href="{{ request.path }}?queue={{ current_queue }}&status={{ status.0.lower }}" id="{{ forloop.counter }}" class="active">{{ status.1 }}</a>
+                        {% else %}
+                            <a href="{{ request.path }}?queue={{ current_queue }}&status={{ status.0.lower }}" id="{{ forloop.counter }}">{{ status.1 }}</a>
+                        {% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

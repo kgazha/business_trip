@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+{% load staticfiles %}
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Printed Form</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/materialize.min.css' %}"/>
+    <link rel="stylesheet" href="{% static 'css/main.css' %}"/>
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+            <form class="col m12 l6 offset-l3" action="/business_trips/{{ object.id }}/" method="post">
+            {% csrf_token %}
+                <div class="input-field col s12 m4 l12">
+                    <label for="second_name">Фамилия</label>
+                    {{ form.second_name }}
+                </div>
+                <div class="input-field col s12 m4 l12">
+                    <label for="first_name">Имя</label>
+                    {{ form.first_name }}
+                </div>
+                <div class="input-field col s12 m4 l12">
+                    <label for="patronymic">Отчество</label>
+                    {{ form.patronymic }}
+                </div>
+            </form>
+        </div>
+    </div>
+    <script src="{% static 'js/jquery-3.4.1.min.js' %}"></script>
+    <script src="{% static 'js/materialize.min.js' %}"></script>
+    <script src="{% static 'js/main.js' %}"></script>
+</body>
+</html>

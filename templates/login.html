@@ -1,0 +1,30 @@
+{% extends "index.html" %}
+{% block login %}
+<div class="container">
+    <div class="row login-form">
+      <div class="card horizontal center">
+          <div class="card-stacked">
+              <div class="card-content">
+                <form action="/login/" method="post">
+                  {% csrf_token %}
+                    {% if form.non_field_errors %}
+                    <div class="error-message">{{ form.non_field_errors }}</div>
+                    {% endif %}
+                    <div class="input-field">
+                      {{ form.username.errors }}
+                      <label for="{{ form.username.id_for_label }}">Имя пользователя</label>
+                      {{ form.username }}
+                    </div>
+                    <div class="input-field">
+                      {{ form.password.errors }}
+                      <label for="{{ form.password.id_for_label }}">Пароль</label>
+                      {{ form.password }}
+                    </div>
+                  <button class="btn waves-effect waves-light" type="submit" name="action" value="submit">Вход</button>
+                </form>
+              </div>
+          </div>
+      </div>
+    </div>
+</div>
+{% endblock %}

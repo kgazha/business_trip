@@ -1,0 +1,32 @@
+{% extends "index.html" %}
+{% block business_trip_detail %}
+<div class="container">
+  <div class="row">
+    <form class="col m12 l6 offset-l3" action="/business_trips/{{ object.id }}/" method="post">
+      {% csrf_token %}
+      {% if messages %}
+      <ul class="messages">
+          {% for message in messages %}
+          <li>{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+          {% endfor %}
+      </ul>
+      {% endif %}
+      <h4>Заявка на командировку</h4>
+      <p>Распоряжение: {{ order_status }}</p>
+      <p>Заявка на финансирование: {{ funding_application_status }}</p>
+      <div class="row">
+          {% for field in form %}
+          <div class="input-field col s12 m4 l12">
+              {{ field }}
+              {{ field.label_tag }}
+          </div>
+          {% endfor %}
+      </div>
+        <a href="/business_trips/" class="waves-effect waves-light btn">
+          В список заявок
+        </a>
+
+    </form>
+  </div>
+</div>
+{% endblock %}

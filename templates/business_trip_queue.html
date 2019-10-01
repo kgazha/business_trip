@@ -1,0 +1,65 @@
+{% extends "index.html" %}
+{% block business_trip_detail %}
+<div class="container">
+  <div class="row">
+    <form class="col m12 l6 offset-l3" action="/business_trips/{{ queue }}/{{ object.id }}/" method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      {% if messages %}
+      <ul class="messages">
+          {% for message in messages %}
+          <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+          {% endfor %}
+      </ul>
+      {% endif %}
+      <h4>Заявка на командировку</h4>
+      <ul class="collapsible">
+        <li>
+            <div class="collapsible-header"><i class="material-icons">assignment</i>Исходная форма</div>
+            <div class="collapsible-body">
+                <div class="row">{% include "business_trip_main_content.html" %}</div>
+            </div>
+        </li>
+      </ul>
+        {% for field in form %}
+        {% if field.name in form.declared_fields %}
+        <div class="input-field col s12 m4 l12">
+            {% if field.errors %}
+                {% for error in field.errors %}
+                <span class="helper-text" data-error="wrong" data-success="right">
+                {{ error  }}
+                </span>
+                {% endfor %}
+            {% endif %}
+            {{ field }}
+            {{ field.label_tag }}
+        </div>
+        {% endif %}
+        {% endfor %}
+
+      {% if queue == 'deputy_governor' %}
+      <button class="btn waves-effect waves-light" type="submit" name="action" value="download">
+        Скачать распоряжение
+      </button>
+      {% endif %}
+      {% if queue == 'bookkeeping' %}
+        <a href="/download/{{ object.id }}/order/" target="_blank" class="waves-effect waves-light btn">Скачать распоряжение</a>
+        <a href="/download/{{ object.id }}/funding_application/" target="_blank" class="waves-effect waves-light btn">Скачать заявку на финансирование</a>
+      {% endif %}
+
+      {% if status == 'NEW' %}
+      {% if queue == 'purchasing_department' %}
+      <button class="btn waves-effect waves-light" type="submit" name="action" value="update">
+        Сохранить изменения
+      </button>
+      {% endif %}
+      <button class="btn waves-effect waves-light" type="submit" name="action" value="complete">
+        Согласовано
+      </button>
+      {% endif %}
+        <a href="/business_trips/?queue={{ queue }}" class="waves-effect waves-light btn">
+          В список заявок
+        </a>
+    </form>
+  </div>
+</div>
+{% endblock %}

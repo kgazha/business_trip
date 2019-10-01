@@ -1,0 +1,25 @@
+{% load staticfiles %}
+{% block menu %}
+<nav class="teal lighten-2">
+  <div class="nav-wrapper container">
+    <a href="/">Заявка на командировку</a>
+    <a href="#" data-target="mobile" class="sidenav-trigger right"><i class="material-icons">menu</i></a>
+    <ul id="nav-mobile" class="right hide-on-med-and-down">
+      {% if not is_authenticated %}
+      <li><a href="/login/">Вход</a></li>
+      {% else %}
+      <li><a href="/business_trips/">Управление заявками</a></li>
+      <li><a href="/logout/">Выход</a></li>
+      {% endif %}
+    </ul>
+  </div>
+</nav>
+<ul class="sidenav" id="mobile">
+  {% if not is_authenticated %}
+  <li><a href="/login/">Вход</a></li>
+  {% else %}
+  <li><a href="/business_trips/">Управление заявками</a></li>
+  <li><a href="/logout/">Выход</a></li>
+  {% endif %}
+</ul>
+{% endblock %}

@@ -1,0 +1,60 @@
+{% load staticfiles %}
+{% block business_trip_table %}
+    <table class="business-trip-table highlight">
+        <thead>
+            <tr>
+                {% for key in business_trip_header %}
+                    <th>{{ key }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in business_trip_content %}
+                {% if current_queue != 'all' %}
+                <tr class='clickable-row' data-href="/business_trips/{{ current_queue }}/{{ row.0 }}">
+                {% else %}
+                <tr class='clickable-row' data-href="/business_trips/{{ row.0 }}">
+                {% endif %}
+                    {% for value in row|slice:"1:" %}
+                        <td>{{ value }}</td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% if business_trip_objects.paginator.num_pages > 1 %}
+    <ul class="pagination">
+        <span class="step-links">
+            {% if business_trip_objects.has_previous %}
+                <li class="waves-effect"><a class="page-link" href="{{ request.path }}?page={{ business_trip_objects.previous_page_number }}&{{ href_args }}">
+                    <i class="material-icons">chevron_left</i>
+                </a></li>
+            {% else %}
+                <li class="disabled"><a class="page-link" href="#">
+                    <i class="material-icons">chevron_left</i>
+                </a></li>
+            {% endif %}
+            {% for i in business_trip_objects.paginator.page_range %}
+                {% if business_trip_objects.number == i %}
+                    <li class="teal lighten-2 waves-effect active">
+                        <a class="page-link" href="{{ request.path }}?page={{ i }}&{{ href_args }}">{{ i }}</a>
+                    </li>
+                {% else %}
+                    <li class="waves-effect">
+                        <a class="page-link" href="{{ request.path }}?page={{ i }}&{{ href_args }}">{{ i }}</a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+            {% if business_trip_objects.has_next %}
+                <li class="waves-effect"><a class="page-link" href="{{ request.path }}?page={{ business_trip_objects.next_page_number }}&{{ href_args }}">
+                    <i class="material-icons">chevron_right</i>
+                </a></li>
+            {% else %}
+                <li class="disabled"><a class="page-link" href="#">
+                    <i class="material-icons">chevron_right</i>
+                </a></li>
+            {% endif %}
+        </span>
+    </ul>
+    {% endif %}
+{% endblock %}
