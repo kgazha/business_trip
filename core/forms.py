@@ -1,5 +1,5 @@
 from django import forms
-from .models import BusinessTrip, DeputyGovernor, Order, ApplicationFunding
+from .models import BusinessTrip, DeputyGovernor, Order, ApplicationFunding, PassportData
 
 
 class BusinessTripForm(forms.ModelForm):
@@ -18,10 +18,21 @@ class BusinessTripForm(forms.ModelForm):
             self.fields[field].widget.attrs.update({'disabled': True})
 
 
+class PassportDataForm(forms.ModelForm):
+    class Meta:
+        model = PassportData
+        fields = '__all__'
+        exclude = ('business_trip',)
+
+    def disable_fields(self):
+        for field in self.fields:
+            self.fields[field].widget.attrs.update({'disabled': True})
+
+
 class PurchasingDepartmentForm(forms.ModelForm):
     class Meta:
         model = ApplicationFunding
-        fields = ('fare', 'daily_allowance',)
+        fields = ('fare', 'daily_allowance', 'hotel_cost',)
         widgets = {
             'fare': forms.TextInput(attrs={'required': "true"}),
         }

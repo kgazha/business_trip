@@ -12,10 +12,10 @@ from django.db.models import Count, Max
 import pymorphy2
 
 from .forms import BusinessTripForm, HeadOfDepartmentForm, DeputyGovernorForm,\
-    PersonnelDepartmentForm, PurchasingDepartmentForm
+    PersonnelDepartmentForm, PurchasingDepartmentForm, PassportDataForm
 from .models import BusinessTrip, BusinessTripQueue, Departments,\
     Document, DeputyGovernor, ActiveSetting,\
-    EmailSending, Order, ApplicationFunding
+    EmailSending, Order, ApplicationFunding, PassportData
 from .utilities import get_file_stream, send_email
 
 
@@ -34,29 +34,34 @@ def get_morphed_word(word, case):
 
 class BusinessTripView(View):
 
-    form_class = BusinessTripForm
-
     def get(self, request, *args, **kwargs):
-        form = self.form_class()
+        business_trip_form = BusinessTripForm()
+        passport_data_form = PassportDataForm(prefix='pd')
         request_created = False
         if request.session.get('request_created'):
             request_created = request.session.pop('request_created')
-        return render(request, 'business_trip_form.html', {'form': form,
+        return render(request, 'business_trip_form.html', {'form': business_trip_form,
+                                                           'passport_data_form': passport_data_form,
                                                            'request_created': request_created,
                                                            'is_authenticated': request.user.is_authenticated})
 
     def post(self, request, *args, **kwargs):
-        form = self.form_class(request.POST)
-        if form.is_valid():
+        business_trip_form = BusinessTripForm(request.POST)
+        passport_data_form = PassportDataForm(request.POST, prefix='pd')
+        if business_trip_form.is_valid() and passport_data_form.is_valid():
             request.session['request_created'] = True
-            instance = form.save(commit=False)
+            instance = business_trip_form.save(commit=False)
             instance.save()
+            passport_data = passport_data_form.save(commit=False)
+            passport_data.business_trip = instance
+            passport_data.save()
             head_of_department_queue = BusinessTripQueue(queue=Departments.HEAD_OF_DEPARTMENT[0],
                                                          business_trip=instance)
             head_of_department_queue.save()
             send_email_by_queue(queue=Departments.HEAD_OF_DEPARTMENT[0])
         else:
-            context = {'form': form,
+            context = {'form': business_trip_form,
+                       'passport_data_form': passport_data_form,
                        'is_authenticated': request.user.is_authenticated}
             return render(request, 'business_trip_form.html', context=context)
         return HttpResponseRedirect('/')
@@ -230,7 +235,7 @@ class QueueView(View):
 
     def set_business_trip_queue(self):
         self.business_trip_queue = get_object_or_404(BusinessTripQueue,
-                                                     business_trip=self.business_trip,
+                                                     business_trip=self.business_trip.id,
                                                      queue=self.queue)
 
     def update_context_status(self):
@@ -243,11 +248,19 @@ class QueueView(View):
         business_trip_form.disable_fields()
         self.context.update({'business_trip_form': business_trip_form})
 
+    def update_context_passport_data_form(self):
+        # print(PassportData.objects.all()[0].__dict__, '<<<<')
+        passport_data = PassportData.objects.get(business_trip=self.business_trip)
+        passport_data_form = PassportDataForm(prefix='pd', initial=model_to_dict(passport_data))
+        passport_data_form.disable_fields()
+        self.context.update({'passport_data_form': passport_data_form})
+
     def set_initial_data(self, pk):
         self.set_business_trip(pk)
         self.set_business_trip_queue()
         self.update_context_status()
         self.update_context_business_trip_form()
+        self.update_context_passport_data_form()
 
 
 class HeadOfDepartmentView(QueueView):
@@ -359,7 +372,9 @@ class DeputyGovernorView(QueueView):
         return render(request, self.template_name, self.context)
 
     def post(self, request, pk):
-        self.set_business_trip(pk)
+        self.queue = Departments.DEPUTY_GOVERNOR[0]
+        self.set_initial_data(pk)
+        # self.set_business_trip(pk)
         self.set_business_trip_queue()
         form = self.form_class(request.POST)
         if form.is_valid():
@@ -417,23 +432,6 @@ class PersonnelDepartmentView(QueueView):
                 return HttpResponseRedirect('/business_trips/personnel_department/' + str(business_trip.id) + '/')
 
 
-def get_application_funding_initial_data(business_trip, field):
-    active_settings = ActiveSetting.objects.first()
-    if field == 'daily_allowance':
-        business_trip_days = (business_trip.end_date - business_trip.start_date).days
-        if business_trip.end_date == business_trip.start_date:
-            business_trip_days = 1
-        return active_settings.daily_allowance * business_trip_days
-    elif field == 'deputy_governor':
-        return business_trip.deputy_governor.full_name_document
-    elif field == 'deputy_governor_position':
-        return business_trip.deputy_governor.position_document
-    elif field == 'hotel_cost':
-        hotel_cost = active_settings.hotel_cost * business_trip.hotel_days
-        return hotel_cost
-    return None
-
-
 class PurchasingDepartmentView(QueueView):
     form_class = PurchasingDepartmentForm
     template_name = 'queue.html'
@@ -446,8 +444,8 @@ class PurchasingDepartmentView(QueueView):
         for field in form.fields:
             if getattr(application_funding, field):
                 form.fields[field].initial = getattr(application_funding, field)
-            elif get_application_funding_initial_data(self.business_trip, field):
-                form.fields[field].initial = get_application_funding_initial_data(self.business_trip, field)
+            # elif get_application_funding_initial_data(self.business_trip, field):
+            #     form.fields[field].initial = get_application_funding_initial_data(self.business_trip, field)
             if self.business_trip_queue.status == BusinessTripQueue.COMPLETED:
                 form.fields[field].widget.attrs['readonly'] = 'readonly'
         self.context.update({'object_id': pk,
@@ -461,11 +459,11 @@ class PurchasingDepartmentView(QueueView):
         business_trip_queue = get_object_or_404(BusinessTripQueue,
                                                 business_trip=business_trip,
                                                 queue=Departments.PURCHASING_DEPARTMENT[0])
-        active_settings = ActiveSetting.objects.first()
+        # active_settings = ActiveSetting.objects.first()
         application_funding = ApplicationFunding.objects.get_or_create(business_trip=business_trip)[0]
         application_funding.deputy_governor = business_trip.deputy_governor.full_name_document
         application_funding.deputy_governor_position = business_trip.deputy_governor.position_document
-        application_funding.hotel_cost = active_settings.hotel_cost * int(business_trip.hotel_days)
+        # application_funding.hotel_cost = active_settings.hotel_cost * int(business_trip.hotel_days)
         # application_funding.save()
         form = self.form_class(request.POST, request.FILES, instance=application_funding)
         if form.is_valid():

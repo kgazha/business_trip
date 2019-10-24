@@ -11,3 +11,18 @@
     {{ field.label_tag }}
 </div>
 {% endfor %}
+
+<h5>Паспортные данные</h5>
+{% for field in passport_data_form %}
+<div class="input-field col s12 m4 l12">
+    {% if field.errors %}
+        {% for error in field.errors %}
+        <span class="helper-text" data-error="wrong" data-success="right">
+        {{ error  }}
+        </span>
+        {% endfor %}
+    {% endif %}
+    {{ field }}
+    {{ field.label_tag }}
+</div>
+{% endfor %}

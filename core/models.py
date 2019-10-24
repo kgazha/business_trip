@@ -73,6 +73,17 @@ class BusinessTrip(models.Model):
         return "%s.%s. %s" % (self.first_name[0], self.patronymic[0], self.second_name)
 
 
+class PassportData(models.Model):
+    business_trip = models.ForeignKey(BusinessTrip, on_delete=models.CASCADE)
+    series = models.CharField(max_length=255, verbose_name='Серия')
+    number = models.CharField(max_length=255, verbose_name='Номер')
+    issued = models.CharField(max_length=255, verbose_name='Кем выдан')
+    date = models.CharField(max_length=255, verbose_name='Дата выдачи')
+    code = models.CharField(max_length=255, verbose_name='Код подразделения')
+    date_added = models.DateField(auto_now_add=True)
+    date_modified = models.DateField(auto_now=True)
+
+
 class Order(models.Model):
     business_trip = models.ForeignKey(BusinessTrip, on_delete=models.CASCADE)
     full_name_genitive = models.CharField(max_length=255, verbose_name='ФИО (О командировании ...)')
@@ -121,7 +132,7 @@ class SingletonModel(models.Model):
 
 class ActiveSetting(SingletonModel):
     hotel_cost = models.IntegerField(verbose_name='Лимит на гостиницу')
-    daily_allowance = models.IntegerField(verbose_name='Суточные')
+    # daily_allowance = models.IntegerField(verbose_name='Суточные')
 
 
 class Document:
