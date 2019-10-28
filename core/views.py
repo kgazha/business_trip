@@ -323,27 +323,28 @@ def get_order_initial_data(business_trip, field):
     return getattr(business_trip, field)
 
 
-@permission_required('core.BOOKKEEPING', login_url='/login/', raise_exception=True)
-def bookkeeping_view(request, pk):
-    business_trip = get_object_or_404(BusinessTrip, id=pk)
-    business_trip_form = BusinessTripForm(prefix='bt', initial=model_to_dict(business_trip))
-    business_trip_form.disable_fields()
-    business_trip_queue = get_object_or_404(BusinessTripQueue,
-                                            business_trip=business_trip,
-                                            queue=Departments.BOOKKEEPING[0])
-    if request.method == 'POST':
+class BookkeepingView(QueueView):
+    template_name = 'queue.html'
+
+    def get(self, request, pk, *args, **kwargs):
+        self.queue = Departments.BOOKKEEPING[0]
+        self.set_initial_data(pk)
+        self.context.update({'object_id': pk,
+                             'form': '',
+                             'queue': self.queue.lower(),
+                             'is_authenticated': request.user.is_authenticated})
+        return render(request, self.template_name, self.context)
+
+    def post(self, request, pk):
+        self.queue = Departments.BOOKKEEPING[0]
+        self.set_initial_data(pk)
+        self.set_business_trip_queue()
         action = request.POST.get('action', None)
         if action == 'complete':
-                wf = WorkFlow(business_trip, business_trip_queue)
-                wf.compete_work()
-                messages.add_message(request, messages.INFO, 'Заявка обработана')
-    status = business_trip_queue.status
-    return render(request, 'queue.html', {'object_id': pk,
-                                          'form': '',
-                                          'business_trip_form': business_trip_form,
-                                          'queue': 'bookkeeping',
-                                          'status': status,
-                                          'is_authenticated': request.user.is_authenticated})
+            wf = WorkFlow(self.business_trip, self.business_trip_queue)
+            wf.compete_work()
+            messages.add_message(request, messages.INFO, 'Заявка обработана')
+            return HttpResponseRedirect('/business_trips/deputy_governor/' + str(self.business_trip.id) + '/')
 
 
 class DeputyGovernorView(QueueView):
@@ -444,8 +445,6 @@ class PurchasingDepartmentView(QueueView):
         for field in form.fields:
             if getattr(application_funding, field):
                 form.fields[field].initial = getattr(application_funding, field)
-            # elif get_application_funding_initial_data(self.business_trip, field):
-            #     form.fields[field].initial = get_application_funding_initial_data(self.business_trip, field)
             if self.business_trip_queue.status == BusinessTripQueue.COMPLETED:
                 form.fields[field].widget.attrs['readonly'] = 'readonly'
         self.context.update({'object_id': pk,
@@ -459,12 +458,9 @@ class PurchasingDepartmentView(QueueView):
         business_trip_queue = get_object_or_404(BusinessTripQueue,
                                                 business_trip=business_trip,
                                                 queue=Departments.PURCHASING_DEPARTMENT[0])
-        # active_settings = ActiveSetting.objects.first()
         application_funding = ApplicationFunding.objects.get_or_create(business_trip=business_trip)[0]
         application_funding.deputy_governor = business_trip.deputy_governor.full_name_document
         application_funding.deputy_governor_position = business_trip.deputy_governor.position_document
-        # application_funding.hotel_cost = active_settings.hotel_cost * int(business_trip.hotel_days)
-        # application_funding.save()
         form = self.form_class(request.POST, request.FILES, instance=application_funding)
         if form.is_valid():
             action = request.POST.get('action', None)

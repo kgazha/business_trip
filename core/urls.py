@@ -28,7 +28,11 @@ urlpatterns = [
                              login_url='/login/',
                              raise_exception=True)(views.PersonnelDepartmentView.as_view()),
          name='personnel_department'),
-    path('business_trips/bookkeeping/<int:pk>/', views.bookkeeping_view, name='bookkeeping'),
+    path('business_trips/bookkeeping/<int:pk>/',
+         permission_required('core.BOOKKEEPING',
+                             login_url='/login/',
+                             raise_exception=True)(views.BookkeepingView.as_view()),
+         name='bookkeeping'),
     path('business_trips/<int:pk>/', views.BusinessTripDetailedView.as_view(), name='business_trip_detailed'),
     path('download/<int:pk>/<str:document_type>/', views.download_link),
 ]
