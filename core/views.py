@@ -10,6 +10,8 @@ from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db.models import Count, Max
 import pymorphy2
+import datetime
+from business_trip import settings
 
 from .forms import BusinessTripForm, HeadOfDepartmentForm, DeputyGovernorForm,\
     PersonnelDepartmentForm, PurchasingDepartmentForm, PassportDataForm
@@ -142,8 +144,8 @@ class BusinessTripManagementView(ListView):
                 ' '.join([obj.second_name, obj.first_name, obj.patronymic]),
                 obj.location,
                 obj.position,
-                str(obj.start_date),
-                str(obj.end_date),
+                str(obj.start_date.strftime(settings.DATE_FORMAT)),
+                str(obj.end_date.strftime(settings.DATE_FORMAT)),
             ])
         href_args = ''
         if queue and status:

@@ -8,14 +8,18 @@ class BusinessTripForm(forms.ModelForm):
         fields = '__all__'
         exclude = ('deputy_governor',)
         widgets = {
-            'start_date': forms.TextInput(attrs={'class': "datepicker validate"}),
-            'end_date': forms.TextInput(attrs={'class': "datepicker"}),
             'position': forms.TextInput(attrs={'class': "autocomplete"}),
         }
 
     def disable_fields(self):
         for field in self.fields:
             self.fields[field].widget.attrs.update({'disabled': True})
+
+    def __init__(self, *args, **kwargs):
+        super(BusinessTripForm, self).__init__(*args, **kwargs)
+        for field in self.fields:
+            if field in ('start_date', 'end_date'):
+                self.fields[field].widget.attrs.update({'class': "datepicker validate"})
 
 
 class PassportDataForm(forms.ModelForm):

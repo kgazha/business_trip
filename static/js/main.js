@@ -196,7 +196,7 @@ $(document).ready(function(){
     $('.collapsible').collapsible();
     $('select').formSelect();
     $('.datepicker').datepicker({
-        format: 'yyyy-mm-dd',
+        format: 'dd.mm.yyyy',
         i18n: {
             cancel: 'Отмена',
             clear: 'Отчистить',
