@@ -102,8 +102,8 @@ class Order(models.Model):
 
 class ApplicationFunding(models.Model):
     business_trip = models.ForeignKey(BusinessTrip, on_delete=models.CASCADE)
-    deputy_governor = models.CharField(max_length=255, null=True, verbose_name='Заместитель губернатора')
-    deputy_governor_position = models.CharField(max_length=255, null=True,
+    deputy_governor = models.CharField(max_length=255, blank=True, null=True, verbose_name='Заместитель губернатора')
+    deputy_governor_position = models.CharField(max_length=255, blank=True, null=True,
                                                 verbose_name='Должность заместителя губернатора')
     fare = models.CharField(max_length=255, null=True, verbose_name='Транспортные расходы')
     hotel_cost = models.CharField(max_length=255, null=True, verbose_name='Сумма проживания в гостинице')

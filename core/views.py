@@ -57,10 +57,10 @@ class BusinessTripView(View):
             passport_data = passport_data_form.save(commit=False)
             passport_data.business_trip = instance
             passport_data.save()
-            head_of_department_queue = BusinessTripQueue(queue=Departments.HEAD_OF_DEPARTMENT[0],
-                                                         business_trip=instance)
-            head_of_department_queue.save()
-            send_email_by_queue(queue=Departments.HEAD_OF_DEPARTMENT[0])
+            initial_department_queue = BusinessTripQueue(business_trip=instance,
+                                                         queue=WorkFlow.INITIAL_DEPARTMENT)
+            initial_department_queue.save()
+            send_email_by_queue(queue=WorkFlow.INITIAL_DEPARTMENT)
         else:
             context = {'form': business_trip_form,
                        'passport_data_form': passport_data_form,
@@ -184,11 +184,11 @@ def send_email_by_queue(queue):
 
 
 class WorkFlow:
-    HEAD_OF_DEPARTMENT = [Departments.DEPUTY_GOVERNOR[0],
-                          Departments.PURCHASING_DEPARTMENT[0]]
+    INITIAL_DEPARTMENT = Departments.PURCHASING_DEPARTMENT[0]
+    HEAD_OF_DEPARTMENT = [Departments.DEPUTY_GOVERNOR[0]]
     DEPUTY_GOVERNOR = [Departments.PERSONNEL_DEPARTMENT[0]]
     PERSONNEL_DEPARTMENT = [Departments.BOOKKEEPING[0]]
-    PURCHASING_DEPARTMENT = [Departments.BOOKKEEPING[0]]
+    PURCHASING_DEPARTMENT = [Departments.HEAD_OF_DEPARTMENT[0]]
     BOOKKEEPING = []
 
     def __init__(self, business_trip, current_queue):
@@ -236,9 +236,8 @@ class QueueView(View):
         self.business_trip = get_object_or_404(BusinessTrip, id=pk)
 
     def set_business_trip_queue(self):
-        self.business_trip_queue = get_object_or_404(BusinessTripQueue,
-                                                     business_trip=self.business_trip.id,
-                                                     queue=self.queue)
+        self.business_trip_queue = BusinessTripQueue.objects.get_or_create(business_trip=self.business_trip,
+                                                                           queue=self.queue)[0]
 
     def update_context_status(self):
         if not self.business_trip_queue:
@@ -461,8 +460,6 @@ class PurchasingDepartmentView(QueueView):
                                                 business_trip=business_trip,
                                                 queue=Departments.PURCHASING_DEPARTMENT[0])
         application_funding = ApplicationFunding.objects.get_or_create(business_trip=business_trip)[0]
-        application_funding.deputy_governor = business_trip.deputy_governor.full_name_document
-        application_funding.deputy_governor_position = business_trip.deputy_governor.position_document
         form = self.form_class(request.POST, request.FILES, instance=application_funding)
         if form.is_valid():
             action = request.POST.get('action', None)
@@ -607,14 +604,6 @@ class BusinessTripDetailedView(FormMixin, DetailView):
             return redirect('/login/')
         context['form'] = BusinessTripForm(initial=model_to_dict(context['object']))
         context['is_authenticated'] = self.request.user.is_authenticated
-        # if context['object'].funding_application_status:
-        #     context['funding_application_status'] = 'Документ сформирован'
-        # else:
-        #     context['funding_application_status'] = 'Документ не сформирован'
-        # if context['object'].order_status:
-        #     context['order_status'] = 'Документ сформирован'
-        # else:
-        #     context['order_status'] = 'Документ не сформирован'
         for field in context['form'].fields:
             context['form'].fields[field].widget.attrs['disabled'] = True
         return context

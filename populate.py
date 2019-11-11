@@ -15,13 +15,19 @@ def populate():
                       receiving_funds=BusinessTrip.RECEIVING_FUNDS_CHOICES[0][0],
                       transport_type='Самолёт',
                       hotel_days=2,
-                      deputy_governor=DeputyGovernor.objects.first())
+                      deputy_governor=DeputyGovernor.objects.first(),
+                      series="123",
+                      number="12345",
+                      issued="Выдан",
+                      date="2012-07-12",
+                      code="700"
+                      )
 
 
 def add_business_trip(second_name, first_name, patronymic, position, location, purpose,
                       start_date, end_date, departure_date_limit, arrival_date_limit,
                       who_pays_the_trip, receiving_funds, transport_type, hotel_days,
-                      deputy_governor):
+                      deputy_governor, series, number, issued, date, code):
     business_trip = BusinessTrip.objects.create(second_name=second_name,
                                                 first_name=first_name,
                                                 patronymic=patronymic,
@@ -37,8 +43,16 @@ def add_business_trip(second_name, first_name, patronymic, position, location, p
                                                 transport_type=transport_type,
                                                 hotel_days=hotel_days,
                                                 deputy_governor=deputy_governor)
-    BusinessTripQueue.objects.create(business_trip=business_trip,
-                                     queue=Departments.HEAD_OF_DEPARTMENT[0])
+    PassportData.objects.create(business_trip=business_trip,
+                                series=series,
+                                number=number,
+                                issued=issued,
+                                date=date,
+                                code=code)
+
+    initial_department_queue = BusinessTripQueue(business_trip=business_trip,
+                                                 queue=WorkFlow.INITIAL_DEPARTMENT)
+    initial_department_queue.save()
 
 
 if __name__ == '__main__':
@@ -47,5 +61,6 @@ if __name__ == '__main__':
 
     django.setup()
 
-    from core.models import BusinessTrip, DeputyGovernor, BusinessTripQueue, Departments
+    from core.models import BusinessTrip, DeputyGovernor, BusinessTripQueue, PassportData
+    from core.views import WorkFlow
     populate()
